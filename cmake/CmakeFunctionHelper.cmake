@@ -187,7 +187,7 @@ foreach(executor ${executor_list})
         foreach(container1 ${container_list_out})
           set(container_names "${container0}_${container1}")
           foreach(increment ${index_list})
-            sanitize_file_name(file_name 
+            sanitize_file_name(file_name
               "${func}_${executor}_${data}_${index}_${container_names}_${increment}.cpp")
             add_custom_command(OUTPUT "${LOCATION}/${file_name}"
               COMMAND ${PYTHON_EXECUTABLE} ${SYCLBLAS_SRC_GENERATOR}/py_gen_blas_binary_special.py
@@ -377,6 +377,7 @@ if(${TARGET} STREQUAL "INTEL_GPU")
   set(supported_types
     "float"
     "double"
+    "cl::sycl::half"
   )
   foreach(data ${supported_types})
     add_gemm_configuration(
@@ -389,21 +390,39 @@ if(${TARGET} STREQUAL "INTEL_GPU")
       "${data}" 64 "false" "false" "false"
       64 8 8 8 8 1 1 1 1 "no_local" "standard" "partial" 4 "strided")
 
-    add_gemm_configuration(
-      "${data}" 16 "true" "false" "false"
-      64 1 1 4 4 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
-    add_gemm_configuration(
-      "${data}" 16 "true" "false" "false"
-      64 2 2 4 4 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+    if (${data} STREQUAL "cl::sycl::half")
+      add_gemm_configuration(
+         "${data}" 16 "true" "false" "false"
+         64 1 1 8 8 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+      add_gemm_configuration(
+        "${data}" 16 "true" "false" "false"
+         64 2 2 8 8 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+    else()
+      add_gemm_configuration(
+         "${data}" 16 "true" "false" "false"
+         64 1 1 4 4 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+      add_gemm_configuration(
+        "${data}" 16 "true" "false" "false"
+         64 2 2 4 4 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+    endif()
+
     add_gemm_configuration(
       "${data}" 64 "true" "true" "true"
       64 2 2 8 8 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
     add_gemm_configuration(
       "${data}" 64 "true" "true" "true"
       64 4 4 8 8 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
-    add_gemm_configuration(
-      "${data}" 256 "true" "true" "true"
-      64 4 4 16 16 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+
+    if (${data} STREQUAL "double")
+      add_gemm_configuration(
+        "${data}" 256 "true" "true" "true"
+        64 4 4 8 8 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+    else()
+      add_gemm_configuration(
+        "${data}" 256 "true" "true" "true"
+        64 4 4 16 16 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
+    endif()
+
     add_gemm_configuration(
       "${data}" 32 "true" "true" "true"
       64 2 1 8 4 1 1 1 1 "local" "tall_skinny" "none" 4 "strided")
