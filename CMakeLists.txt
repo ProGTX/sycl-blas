@@ -70,8 +70,8 @@ endif()
 
 # By default, tall and skinny Gemm is enabled (for better performance)
 option(GEMM_TALL_SKINNY_SUPPORT "Whether to enable tall and skinny Gemm" ON)
-# By default vectorization in gemm kernels is enabled as it imrpove the performance on all Devices.
-option(GEMM_VECTORIZATION_SUPPORT "Whether to enable vectorization in Gemm kernels" ON)
+# By default vectorization in gemm kernels is disabled until implemented
+option(GEMM_VECTORIZATION_SUPPORT "Whether to enable vectorization in Gemm kernels" OFF)
 
 add_definitions(-DCL_TARGET_OPENCL_VERSION=220)
 
